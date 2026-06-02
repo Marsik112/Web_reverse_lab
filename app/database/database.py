@@ -23,8 +23,9 @@ def init_db():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS analysis (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        file_id INTEGER NOT NULL,
+        file_id INTEGER NOT NULL UNIQUE,
         raw_data_file TEXT,
+        raw_data_strings TEXT,
         FOREIGN KEY (file_id) REFERENCES files(id)
                    ON DELETE CASCADE
                    ON UPDATE CASCADE
@@ -77,16 +78,31 @@ def file_info(file_id):
     connection.close()
     return dict(file) if file != None else None
 
-def add_analisys(file_id, raw_data):
+def add_analisys(file_id, raw_data, raw_data_strings):
     connection = get_connection()
     cursor = connection.cursor()
 
-    sql ="""INSERT INTO analysis (file_id, raw_data_file)
-            VALUES(?, ?)
-    """
-    data_sql = (file_id, raw_data)
+    search_result = get_analysis(file_id)
+    if search_result == None:
+        sql ="""INSERT INTO analysis (file_id, raw_data_file, raw_data_strings)
+            VALUES(?, ?, ?)
+        """
+        data_sql = (file_id, raw_data, raw_data_strings)
 
-    cursor.execute(sql, data_sql)
+        cursor.execute(sql, data_sql)
+    else:
+        sql ="""UPDATE analysis SET raw_data_file = ?, raw_data_strings = ? WHERE file_id = ?"""
+        data_sql = (raw_data, raw_data_strings, file_id)
+
+        cursor.execute(sql, data_sql)
     connection.commit()
     connection.close()
     return 0
+
+def get_analysis(file_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("""SELECT * FROM analysis WHERE file_id = ?""", (file_id,))
+    search_result = cursor.fetchone()
+    connection.close()
+    return search_result

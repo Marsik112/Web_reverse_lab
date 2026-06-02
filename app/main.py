@@ -51,11 +51,20 @@ async def get_file_info(file_id: int):
     return file_info
 
 @app.get("/files/{file_id}/analysis")
-async def get_file_type(file_id: int):
+async def get_file_analyze(file_id: int):
     file_info = database.file_info(file_id)
     if file_info == None:
         raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
     saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
     file_result = analyzer.anylyze_file_type(saved_name)
-    database.add_analisys(file_id, file_result)
-    return {"id": file_id, "tool": "file", "output": file_result}
+    strings_result = analyzer.analyze_file_strings(saved_name)
+    database.add_analisys(file_id, file_result, strings_result)
+    strings_output = []
+    counts = 0
+    for row in strings_result.split("\n"):
+        if len(row) >= 5:
+            strings_output.append(row)
+            counts+=1
+        if counts >=100:
+            break
+    return {"id": file_id, "file_result": file_result, "strings_result": strings_output}
