@@ -56,5 +56,6 @@ async def get_file_type(file_id: int):
     if file_info == None:
         raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
     saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
-    file_result = analyzer.anylyze_file_type(saved_name)    
+    file_result = analyzer.anylyze_file_type(saved_name)
+    database.add_analisys(file_id, file_result)
     return {"id": file_id, "tool": "file", "output": file_result}

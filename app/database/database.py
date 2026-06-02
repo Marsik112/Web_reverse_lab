@@ -1,6 +1,13 @@
 import sqlite3
+
+def get_connection():
+    conn = sqlite3.connect('bd_for_lab.db')
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
+
 def init_db():
-    connection = sqlite3.connect('bd_for_lab.db')
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute('''
@@ -13,13 +20,24 @@ def init_db():
     ) 
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS analysis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        file_id INTEGER NOT NULL,
+        raw_data_file TEXT,
+        FOREIGN KEY (file_id) REFERENCES files(id)
+                   ON DELETE CASCADE
+                   ON UPDATE CASCADE
+    ) 
+    ''')
+
     connection.commit()
     connection.close()
     return 0
 
 
 def add_file(filename, size, status):
-    connection = sqlite3.connect('bd_for_lab.db')
+    connection = get_connection()
     cursor = connection.cursor()
     
     sql = """
@@ -37,8 +55,7 @@ def add_file(filename, size, status):
     return id_file
 
 def list_files():
-    connection = sqlite3.connect('bd_for_lab.db')
-    connection.row_factory = sqlite3.Row
+    connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute("""SELECT * FROM files""")
@@ -48,8 +65,7 @@ def list_files():
     return file_list
 
 def file_info(file_id):
-    connection = sqlite3.connect('bd_for_lab.db')
-    connection.row_factory = sqlite3.Row
+    connection = get_connection()
     cursor = connection.cursor()
 
     sql = """SELECT * FROM files
@@ -60,3 +76,17 @@ def file_info(file_id):
     
     connection.close()
     return dict(file) if file != None else None
+
+def add_analisys(file_id, raw_data):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    sql ="""INSERT INTO analysis (file_id, raw_data_file)
+            VALUES(?, ?)
+    """
+    data_sql = (file_id, raw_data)
+
+    cursor.execute(sql, data_sql)
+    connection.commit()
+    connection.close()
+    return 0
