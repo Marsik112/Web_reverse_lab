@@ -56,9 +56,14 @@ async def get_file_analyze(file_id: int):
     if file_info == None:
         raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
     saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
-    file_result = analyzer.anylyze_file_type(saved_name)
-    strings_result = analyzer.analyze_file_strings(saved_name)
-    database.add_analisys(file_id, file_result, strings_result)
+    search_analisys =  database.get_analysis(file_id)
+    if search_analisys == None:
+        file_result = analyzer.anylyze_file_type(saved_name)
+        strings_result = analyzer.analyze_file_strings(saved_name)
+        database.add_analisys(file_id, file_result, strings_result)
+    else: 
+        file_result = search_analisys["file_result"]
+        strings_result = search_analisys["strings_output"]
     strings_output = []
     counts = 0
     for row in strings_result.split("\n"):

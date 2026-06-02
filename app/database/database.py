@@ -24,8 +24,9 @@ def init_db():
     CREATE TABLE IF NOT EXISTS analysis (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         file_id INTEGER NOT NULL UNIQUE,
-        raw_data_file TEXT,
-        raw_data_strings TEXT,
+        analysis_time TEXT NOT NULL,
+        file_result TEXT,
+        strings_output TEXT,
         FOREIGN KEY (file_id) REFERENCES files(id)
                    ON DELETE CASCADE
                    ON UPDATE CASCADE
@@ -78,21 +79,21 @@ def file_info(file_id):
     connection.close()
     return dict(file) if file != None else None
 
-def add_analisys(file_id, raw_data, raw_data_strings):
+def add_analisys(file_id, file_result, strings_output):
     connection = get_connection()
     cursor = connection.cursor()
 
     search_result = get_analysis(file_id)
     if search_result == None:
-        sql ="""INSERT INTO analysis (file_id, raw_data_file, raw_data_strings)
-            VALUES(?, ?, ?)
+        sql ="""INSERT INTO analysis (file_id, analysis_time,  file_result, strings_output)
+            VALUES(?, datetime('now'),?, ?)
         """
-        data_sql = (file_id, raw_data, raw_data_strings)
+        data_sql = (file_id, file_result, strings_output)
 
         cursor.execute(sql, data_sql)
     else:
-        sql ="""UPDATE analysis SET raw_data_file = ?, raw_data_strings = ? WHERE file_id = ?"""
-        data_sql = (raw_data, raw_data_strings, file_id)
+        sql ="""UPDATE analysis SET file_result = ?, strings_output = ? WHERE file_id = ?"""
+        data_sql = (file_result, strings_output, file_id)
 
         cursor.execute(sql, data_sql)
     connection.commit()
@@ -105,4 +106,4 @@ def get_analysis(file_id):
     cursor.execute("""SELECT * FROM analysis WHERE file_id = ?""", (file_id,))
     search_result = cursor.fetchone()
     connection.close()
-    return search_result
+    return dict(search_result) if search_result != None else None
