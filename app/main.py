@@ -35,4 +35,13 @@ async def upload_file(file: UploadFile):
         shutil.copyfileobj(file.file, buffer)
     
     return {"id": file_id, "filename": file.filename, "stored_name": new_filename,"extension": file_extension, "length": len(fs)}
-    
+
+@app.get("/files")
+async def get_files_list():
+    file_data = database.list_files()
+    return file_data
+
+@app.get("/files/{file_id}")
+async def get_file_info(file_id: int):
+    file_info = database.file_info(file_id)
+    return file_info

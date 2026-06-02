@@ -35,3 +35,28 @@ def add_file(filename, size, status):
     connection.commit()
     connection.close()
     return id_file
+
+def list_files():
+    connection = sqlite3.connect('bd_for_lab.db')
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    cursor.execute("""SELECT * FROM files""")
+    file_list = [dict(row) for row in cursor.fetchall()]
+
+    connection.close()
+    return file_list
+
+def file_info(file_id):
+    connection = sqlite3.connect('bd_for_lab.db')
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    sql = """SELECT * FROM files
+            WHERE id = ?"""
+    data_sql = (file_id,)
+    cursor.execute(sql, data_sql)
+    file = cursor.fetchone()
+    
+    connection.close()
+    return file
