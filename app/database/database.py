@@ -59,4 +59,4 @@ def file_info(file_id):
     file = cursor.fetchone()
     
     connection.close()
-    return file
+    return dict(file) if file != None else None

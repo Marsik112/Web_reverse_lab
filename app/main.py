@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import shutil
 from app.database import database
+from app.analysis import analyzer
 
 app = FastAPI()
 database.init_db()
@@ -44,4 +45,16 @@ async def get_files_list():
 @app.get("/files/{file_id}")
 async def get_file_info(file_id: int):
     file_info = database.file_info(file_id)
+    if file_info == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    file_info["saved_name"] = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
     return file_info
+
+@app.get("/files/{file_id}/analysis")
+async def get_file_type(file_id: int):
+    file_info = database.file_info(file_id)
+    if file_info == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
+    file_result = analyzer.anylyze_file_type(saved_name)    
+    return {"id": file_id, "tool": "file", "output": file_result}
