@@ -27,6 +27,7 @@ def init_db():
         analysis_time TEXT NOT NULL,
         file_result TEXT,
         strings_output TEXT,
+        sha256 TEXT,
         FOREIGN KEY (file_id) REFERENCES files(id)
                    ON DELETE CASCADE
                    ON UPDATE CASCADE
@@ -79,21 +80,21 @@ def file_info(file_id):
     connection.close()
     return dict(file) if file != None else None
 
-def add_analisys(file_id, file_result, strings_output):
+def add_analisys(file_id, file_result, strings_output, sha256):
     connection = get_connection()
     cursor = connection.cursor()
 
     search_result = get_analysis(file_id)
     if search_result == None:
-        sql ="""INSERT INTO analysis (file_id, analysis_time,  file_result, strings_output)
-            VALUES(?, datetime('now'),?, ?)
+        sql ="""INSERT INTO analysis (file_id, analysis_time,  file_result, strings_output, sha256)
+            VALUES(?, datetime('now'),?, ?, ?)
         """
-        data_sql = (file_id, file_result, strings_output)
+        data_sql = (file_id, file_result, strings_output, sha256)
 
         cursor.execute(sql, data_sql)
     else:
-        sql ="""UPDATE analysis SET file_result = ?, strings_output = ? WHERE file_id = ?"""
-        data_sql = (file_result, strings_output, file_id)
+        sql ="""UPDATE analysis SET file_result = ?, strings_output = ?, sha256 = ? WHERE file_id = ?"""
+        data_sql = (file_result, strings_output, file_id, sha256)
 
         cursor.execute(sql, data_sql)
     connection.commit()
