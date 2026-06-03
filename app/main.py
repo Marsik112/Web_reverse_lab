@@ -58,3 +58,13 @@ async def get_file_analyze(file_id: int):
     saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
     analisis_result = analyzer.analyze_file(file_id, saved_name)
     return analisis_result
+
+@app.delete("/files/{file_id}")
+def delete_file(file_id: int):
+    file_info = database.file_info(file_id)
+    if file_info == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    path =Path(__file__).resolve().parent.parent / 'uploads' / (str(file_info["id"]) + os.path.splitext(file_info["filename"])[1])
+    path.unlink(missing_ok=True)
+    database.delete_file(file_id)
+    return {'status': 'deleted', "file_id": file_id}

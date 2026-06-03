@@ -108,3 +108,10 @@ def get_analysis(file_id):
     search_result = cursor.fetchone()
     connection.close()
     return dict(search_result) if search_result != None else None
+
+def delete_file(file_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("""DELETE FROM files WHERE id = ?""", (file_id,))
+    connection.commit()
+    connection.close()
