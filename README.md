@@ -82,15 +82,21 @@ DELETE /files/{file_id}
 Структура проекта
 
 Web_reverse_lab/
+
 ├── app/
+
 │   ├── main.py
-│   ├── analysis/
-│   │   └── analyzer.py
-│   └── database/
-│       └── database.py
+
+│   ├── analysis/analyzer.py
+
+│   └── database/database.py
+
 ├── uploads/
+
 ├── .gitignore
+
 ├── requirements.txt
+
 └── README.md
 
 Планы развития
