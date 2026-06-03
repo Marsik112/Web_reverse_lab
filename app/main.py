@@ -4,6 +4,7 @@ import os
 import shutil
 from app.database import database
 from app.analysis import analyzer
+from app.analysis import ghidra_headless_analyzer
 
 app = FastAPI()
 database.init_db()
@@ -68,3 +69,14 @@ def delete_file(file_id: int):
     path.unlink(missing_ok=True)
     database.delete_file(file_id)
     return {'status': 'deleted', "file_id": file_id}
+
+@app.get("/files/{file_id}/ghidra")
+def ghidra_analyze(file_id: int):
+    file_info = database.file_info(file_id)
+    if file_info == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
+    data = ghidra_headless_analyzer.run_ghidra_analysis(saved_name)
+    if data == None:
+        raise HTTPException(status_code = 400, detail = "Ошибка рабыты ghidra")
+    return data
