@@ -5,6 +5,7 @@ import shutil
 from app.database import database
 from app.analysis import analyzer
 from app.analysis import ghidra_headless_analyzer
+import json
 
 app = FastAPI()
 database.init_db()
@@ -72,11 +73,18 @@ def delete_file(file_id: int):
 
 @app.get("/files/{file_id}/ghidra")
 def ghidra_analyze(file_id: int):
-    file_info = database.file_info(file_id)
+    file_info = database.file_info(file_id)       
     if file_info == None:
         raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
-    saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
-    data = ghidra_headless_analyzer.run_ghidra_analysis(saved_name)
-    if data == None:
-        raise HTTPException(status_code = 400, detail = "Ошибка рабыты ghidra")
-    return data
+    ghidra_info = database.get_ghidra(file_id)
+    if ghidra_info == None:
+        saved_name = str(file_info["id"]) + os.path.splitext(file_info["filename"])[1]
+        data = ghidra_headless_analyzer.run_ghidra_analysis(saved_name)
+        if data == None:
+           raise HTTPException(status_code = 400, detail = "Ошибка рабыты ghidra")
+        database.add_ghidra(file_id, data)
+    ghidra_info = database.get_ghidra(file_id)
+    data = json.loads(ghidra_info['func_json'])
+    analysis_time = ghidra_info["analysis_time"]
+
+    return {"id": file_id, "time": analysis_time, "ghidra_func": data}
