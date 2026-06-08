@@ -24,6 +24,7 @@ def analyze_file(file_id, saved_name):
         strings_result = analyze_file_strings(saved_name)
         sha256 = analyze_sha256(saved_name)
         analyze_time = database.add_analisys(file_id, file_result, strings_result, sha256)
+    search_analisys =  database.get_analysis(file_id)
     file_result = search_analisys["file_result"]
     strings_result = search_analisys["strings_output"]
     sha256 = search_analisys["sha256"]

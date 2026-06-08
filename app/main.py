@@ -88,3 +88,29 @@ def ghidra_analyze(file_id: int):
     analysis_time = ghidra_info["analysis_time"]
 
     return {"id": file_id, "time": analysis_time, "ghidra_func": data}
+
+@app.get("/files/{file_id}/analysis/search")
+async def search_strings(file_id: int, filter: str):
+    data = database.get_analysis(file_id) 
+    if data == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    strings_data = data["strings_output"]
+    filter_strings = []
+    for s in strings_data.split("\n"):
+        if filter.lower() in s.lower():
+            filter_strings.append(s)
+
+    return {"filter": filter, "count": len(filter_strings), "result": filter_strings}
+
+@app.get("/files/{file_id}/ghidra/search")
+async def search_ghidra(file_id: int, filter: str):
+    data = database.get_ghidra(file_id) 
+    if data == None:
+        raise HTTPException(status_code = 404, detail = "Файла с таким id не существует")
+    strings_data = json.loads(data["func_json"])
+    func_data = strings_data.get("functions", [])
+    filter_func = []
+    for s in func_data:
+        if filter.lower() in s.get("name", "").lower() and False == s.get("is_system", False):
+            filter_func.append(s)
+    return {"filter": filter, "count": len(filter_func), "result": filter_func}
