@@ -13,6 +13,8 @@ GHIDRA_RESULTS_DIR = BASE_DIR / "ghidra_results"
 SCRIPT_DIR = BASE_DIR / "ghidra_scripts"
 
 def run_ghidra_analysis(file_name: str):
+
+
     binary_path = PROJECT_ROOT / "uploads" / file_name
 
     if not binary_path.exists():
